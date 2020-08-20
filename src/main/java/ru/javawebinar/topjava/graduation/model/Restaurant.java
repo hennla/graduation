@@ -1,11 +1,17 @@
 package ru.javawebinar.topjava.graduation.model;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.util.List;
 
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Table(name = "restaurants")
 public class Restaurant extends AbstractBaseEntity {
 
@@ -17,8 +23,6 @@ public class Restaurant extends AbstractBaseEntity {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "restaurant")
     @OrderBy("date DESC")
     private List<Menu> menus;
-
-    public Restaurant() {}
 
     public String getName() {
         return name;
