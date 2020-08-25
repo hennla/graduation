@@ -3,14 +3,33 @@ package ru.javawebinar.topjava.graduation.config;
 import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 import lombok.extern.slf4j.Slf4j;
 import org.h2.tools.Server;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.JpaVendorAdapter;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import javax.persistence.EntityManagerFactory;
+import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.util.Properties;
 
 @Slf4j
 @Configuration
+@ComponentScan(basePackages="ru.javawebinar.topjava.graduation.*")
+@EnableJpaRepositories(entityManagerFactoryRef="emf")
+@EnableTransactionManagement
 public class AppConfig {
+   private static Logger logger = LoggerFactory.getLogger(AppConfig.class);
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     public Server h2WebServer() throws SQLException {
@@ -27,5 +46,57 @@ public class AppConfig {
         return new Hibernate5Module();
     }
 
+    @Bean
+    public DataSource dataSource() {
+        try {
+            EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
+            return builder.setType(EmbeddedDatabaseType.H2)
+                    .addScript("classpath:db/data.sql")
+                    .build();
+        } catch (Exception e) {
+            logger.error("Embedded DataSource bean cannot be created", e);
+            return null;
+        }
+    }
+
+    @Bean
+    public Properties hibernateProperties() {
+        Properties hibernateProp = new Properties();
+        hibernateProp.put("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
+        hibernateProp.put("hibernate.hbm2ddl.auto", "create-drop");
+        hibernateProp.put("javax.persistence.jdbc.driver", "org.h2.Driver");
+        hibernateProp.put("javax.persistence.jdbc.url", "jdbc:h2:mem:voting");
+        hibernateProp.put("javax.persistence.jdbc.user", "sa");
+        hibernateProp.put("javax.persistence.jdbc.password", "");
+        hibernateProp.put("hibernate.format_sql", true);
+        hibernateProp.put("hibernate.use_sql_comments", true);
+        hibernateProp.put("hibernate.show_sql", true);
+        hibernateProp.put("hibernate.jdbc.batch_size", 10);
+        hibernateProp.put("hibernate.jdbc.fetch_size", 50);
+        return hibernateProp;
+    }
+
+    @Bean
+    public JpaVendorAdapter jpaVendorAdapter() {
+        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        vendorAdapter.setGenerateDdl(true);
+        return vendorAdapter;
+    }
+    @Bean
+    public EntityManagerFactory entityManagerFactory() {
+
+        LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
+        factory.setDataSource(dataSource());
+        factory.setJpaVendorAdapter(jpaVendorAdapter());
+        factory.setPackagesToScan("ru.javawebinar.topjava.graduation");
+        factory.setJpaProperties(hibernateProperties());
+        factory.afterPropertiesSet();
+        return factory.getNativeEntityManagerFactory();
+    }
+
+    @Bean
+    public PlatformTransactionManager transactionManager() {
+        return new JpaTransactionManager(entityManagerFactory());
+    }
 
 }

@@ -13,7 +13,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "users", uniqueConstraints = {@UniqueConstraint(columnNames = "email", name = "users_unique_email.idx")})
+@Table(name = "users", uniqueConstraints = {@UniqueConstraint(columnNames = "email", name = "users_unique_email_idx")})
 public class User extends AbstractBaseEntity {
 
     @NotBlank
@@ -32,7 +32,7 @@ public class User extends AbstractBaseEntity {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "enabled", nullable = false, columnDefinition = "boll default true")
+    @Column(name = "enabled", nullable = false, columnDefinition = "boolean default true")
     private boolean enabled = true;
 
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)

@@ -7,9 +7,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 
-
+//https://spring-projects.ru/guides/accessing-data-rest/
 @Configuration
-@EnableJpaRepositories
 @Import(RepositoryRestMvcConfiguration.class)
 @EnableAutoConfiguration
 public class Application {

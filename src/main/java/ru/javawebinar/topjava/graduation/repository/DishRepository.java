@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import ru.javawebinar.topjava.graduation.model.Dish;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
-@RepositoryRestResource(collectionResourceRel = "dish", path = "dish")
+@RepositoryRestResource(collectionResourceRel = "dishes", path = "dishes")
 public interface DishRepository extends JpaRepository<Dish, Integer> {
+
 }
