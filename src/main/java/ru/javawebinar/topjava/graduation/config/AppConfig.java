@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
@@ -25,18 +26,20 @@ import java.util.Properties;
 
 @Slf4j
 @Configuration
-@ComponentScan(basePackages="ru.javawebinar.topjava.graduation.*")
-@EnableJpaRepositories(entityManagerFactoryRef="emf")
+@ComponentScan(basePackages = "ru.javawebinar.topjava.graduation.*")
+@EnableJpaRepositories
 @EnableTransactionManagement
 public class AppConfig {
-   private static Logger logger = LoggerFactory.getLogger(AppConfig.class);
+    private static final Logger logger = LoggerFactory.getLogger(AppConfig.class);
 
-    @Bean(initMethod = "start", destroyMethod = "stop")
+
+    @Bean(name = "h2WebServer", initMethod = "start", destroyMethod = "stop")
     public Server h2WebServer() throws SQLException {
         return Server.createWebServer("-tcp", "-webAllowOthers", "-webPort", "8082");
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
+    @DependsOn(value = "h2WebServer")
     public Server h2Server() throws SQLException {
         return Server.createTcpServer("-tcp", "-tcpAllowOthers", "-tcpPort", "9092");
     }
@@ -51,7 +54,6 @@ public class AppConfig {
         try {
             EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
             return builder.setType(EmbeddedDatabaseType.H2)
-                    .addScript("classpath:db/data.sql")
                     .build();
         } catch (Exception e) {
             logger.error("Embedded DataSource bean cannot be created", e);
@@ -64,6 +66,7 @@ public class AppConfig {
         Properties hibernateProp = new Properties();
         hibernateProp.put("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
         hibernateProp.put("hibernate.hbm2ddl.auto", "create-drop");
+        hibernateProp.put("hibernate.hbm2ddl.import_files", "db/data.sql");
         hibernateProp.put("javax.persistence.jdbc.driver", "org.h2.Driver");
         hibernateProp.put("javax.persistence.jdbc.url", "jdbc:h2:mem:voting");
         hibernateProp.put("javax.persistence.jdbc.user", "sa");
@@ -82,15 +85,18 @@ public class AppConfig {
         vendorAdapter.setGenerateDdl(true);
         return vendorAdapter;
     }
+
     @Bean
     public EntityManagerFactory entityManagerFactory() {
 
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
-        factory.setDataSource(dataSource());
-        factory.setJpaVendorAdapter(jpaVendorAdapter());
-        factory.setPackagesToScan("ru.javawebinar.topjava.graduation");
+        factory.setPackagesToScan("ru.javawebinar.topjava.graduation.model");
+        factory.setPersistenceUnitName("graduation");
         factory.setJpaProperties(hibernateProperties());
+        factory.setJpaVendorAdapter(jpaVendorAdapter());
         factory.afterPropertiesSet();
+        factory.setDataSource(dataSource());
+
         return factory.getNativeEntityManagerFactory();
     }
 
@@ -98,5 +104,4 @@ public class AppConfig {
     public PlatformTransactionManager transactionManager() {
         return new JpaTransactionManager(entityManagerFactory());
     }
-
 }

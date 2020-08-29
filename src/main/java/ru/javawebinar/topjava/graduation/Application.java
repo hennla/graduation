@@ -1,19 +1,21 @@
 package ru.javawebinar.topjava.graduation;
 
+import lombok.AllArgsConstructor;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-//https://spring-projects.ru/guides/accessing-data-rest/
-@Configuration
-@Import(RepositoryRestMvcConfiguration.class)
-@EnableAutoConfiguration
+import java.util.Properties;
+
+@AllArgsConstructor
+@SpringBootApplication
 public class Application {
 
     public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+        Properties properties = new Properties();
+        properties.put("server.port", "8080");
+        properties.put("server.servlet.contextPath", "/rest");
+        SpringApplication application = new SpringApplication(Application.class);
+        application.setDefaultProperties(properties);
+        application.run(args);
     }
 }
