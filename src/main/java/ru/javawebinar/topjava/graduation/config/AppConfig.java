@@ -3,8 +3,6 @@ package ru.javawebinar.topjava.graduation.config;
 import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 import lombok.extern.slf4j.Slf4j;
 import org.h2.tools.Server;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -26,13 +24,11 @@ import java.util.Properties;
 
 @Slf4j
 @Configuration
-@ComponentScan(basePackages = "ru.javawebinar.topjava.graduation.*")
-@EnableJpaRepositories
+@ComponentScan
 @EnableTransactionManagement
+@EnableJpaRepositories
 public class AppConfig {
-    private static final Logger logger = LoggerFactory.getLogger(AppConfig.class);
-
-
+/*
     @Bean(name = "h2WebServer", initMethod = "start", destroyMethod = "stop")
     public Server h2WebServer() throws SQLException {
         return Server.createWebServer("-tcp", "-webAllowOthers", "-webPort", "8082");
@@ -43,7 +39,7 @@ public class AppConfig {
     public Server h2Server() throws SQLException {
         return Server.createTcpServer("-tcp", "-tcpAllowOthers", "-tcpPort", "9092");
     }
-
+*/
     @Bean
     protected Hibernate5Module hibernateJacksonModule() {
         return new Hibernate5Module();
@@ -56,7 +52,7 @@ public class AppConfig {
             return builder.setType(EmbeddedDatabaseType.H2)
                     .build();
         } catch (Exception e) {
-            logger.error("Embedded DataSource bean cannot be created", e);
+            log.error("Embedded DataSource bean cannot be created", e);
             return null;
         }
     }
@@ -68,7 +64,7 @@ public class AppConfig {
         hibernateProp.put("hibernate.hbm2ddl.auto", "create-drop");
         hibernateProp.put("hibernate.hbm2ddl.import_files", "db/data.sql");
         hibernateProp.put("javax.persistence.jdbc.driver", "org.h2.Driver");
-        hibernateProp.put("javax.persistence.jdbc.url", "jdbc:h2:mem:voting");
+        hibernateProp.put("javax.persistence.jdbc.url", "jdbc:h2:mem:voting;DB_CLOSE_DELAY=-1");
         hibernateProp.put("javax.persistence.jdbc.user", "sa");
         hibernateProp.put("javax.persistence.jdbc.password", "");
         hibernateProp.put("hibernate.format_sql", true);

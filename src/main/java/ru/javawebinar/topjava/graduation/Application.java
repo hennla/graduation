@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import java.util.Properties;
 
 @AllArgsConstructor
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"ru.javawebinar.topjava.graduation.*.*"})
 public class Application {
 
     public static void main(String[] args) {
